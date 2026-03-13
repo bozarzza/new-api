@@ -163,6 +163,29 @@ func SetApiRouter(router *gin.Engine) {
 		apiRouter.GET("/subscription/epay/notify", controller.SubscriptionEpayNotify)
 		apiRouter.GET("/subscription/epay/return", controller.SubscriptionEpayReturn)
 		apiRouter.POST("/subscription/epay/return", controller.SubscriptionEpayReturn)
+
+		// Marketplace
+		marketplaceRoute := apiRouter.Group("/marketplace")
+		marketplaceRoute.Use(middleware.UserAuth())
+		{
+			marketplaceRoute.GET("/channels", controller.ListMarketplaceChannels)
+			marketplaceRoute.GET("/channels/self", controller.ListSellerChannels)
+			marketplaceRoute.POST("/channels", controller.AddSellerChannel)
+			marketplaceRoute.PUT("/channels/:id", controller.UpdateSellerChannel)
+			marketplaceRoute.DELETE("/channels/:id", controller.DeleteSellerChannel)
+			marketplaceRoute.POST("/channels/:id/rate", controller.RateChannel)
+			marketplaceRoute.GET("/channels/:id/ratings", controller.GetChannelRatingsAPI)
+		}
+
+		// Credit
+		creditRoute := apiRouter.Group("/credit")
+		creditRoute.Use(middleware.UserAuth())
+		{
+			creditRoute.GET("/balance", controller.GetCreditBalance)
+			creditRoute.GET("/transactions", controller.GetCreditTransactions)
+			creditRoute.POST("/withdraw", controller.RequestWithdrawal)
+		}
+
 		optionRoute := apiRouter.Group("/option")
 		optionRoute.Use(middleware.RootAuth())
 		{
