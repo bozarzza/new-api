@@ -38,11 +38,14 @@ export const DEFAULT_ADMIN_CONFIG = {
     log: true,
     midjourney: true,
     task: true,
+    marketplace: true,
+    seller: true,
   },
   personal: {
     enabled: true,
     topup: true,
     personal: true,
+    credit: true,
   },
   admin: {
     enabled: true,

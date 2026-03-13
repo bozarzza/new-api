@@ -75,6 +75,9 @@ import {
   Package,
   Server,
   CalendarClock,
+  Store,
+  ShoppingBag,
+  Coins,
 } from 'lucide-react';
 import {
   SiAtlassian,
@@ -147,6 +150,12 @@ export function getLucideIcon(key, selected = false) {
       return <CalendarClock {...commonProps} color={iconColor} />;
     case 'setting':
       return <Settings {...commonProps} color={iconColor} />;
+    case 'marketplace':
+      return <Store {...commonProps} color={iconColor} />;
+    case 'seller':
+      return <ShoppingBag {...commonProps} color={iconColor} />;
+    case 'credit':
+      return <Coins {...commonProps} color={iconColor} />;
     default:
       return <CircleUser {...commonProps} color={iconColor} />;
   }

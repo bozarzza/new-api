@@ -49,6 +49,9 @@ const routerMap = {
   deployment: '/console/deployment',
   playground: '/console/playground',
   personal: '/console/personal',
+  marketplace: '/marketplace',
+  seller: '/console/marketplace/seller',
+  credit: '/console/credit',
 };
 
 const SiderBar = ({ onNavigate = () => {} }) => {
@@ -70,6 +73,16 @@ const SiderBar = ({ onNavigate = () => {} }) => {
 
   const workspaceItems = useMemo(() => {
     const items = [
+      {
+        text: t('算力市场'),
+        itemKey: 'marketplace',
+        to: '/marketplace',
+      },
+      {
+        text: t('我的频道'),
+        itemKey: 'seller',
+        to: '/console/marketplace/seller',
+      },
       {
         text: t('数据看板'),
         itemKey: 'detail',
@@ -128,6 +141,11 @@ const SiderBar = ({ onNavigate = () => {} }) => {
         text: t('钱包管理'),
         itemKey: 'topup',
         to: '/topup',
+      },
+      {
+        text: t('积分中心'),
+        itemKey: 'credit',
+        to: '/console/credit',
       },
       {
         text: t('个人设置'),
