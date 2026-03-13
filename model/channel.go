@@ -53,6 +53,15 @@ type Channel struct {
 
 	OtherSettings string `json:"settings" gorm:"column:settings"` // 其他设置，存储azure版本等不需要检索的信息，详见dto.ChannelOtherSettings
 
+	// Marketplace fields
+	OwnerUserId    int      `json:"owner_user_id" gorm:"index;default:0"`                    // 0 = admin-owned (system), >0 = seller-owned
+	ChannelMode    int      `json:"channel_mode" gorm:"default:0"`                           // 0=system, 1=marketplace-listed
+	PricePerKToken float64  `json:"price_per_k_token" gorm:"type:decimal(10,6);default:0"`   // seller's price per 1K tokens (USD)
+	ChannelLabel   *string  `json:"channel_label" gorm:"type:varchar(32)"`                   // "official" / "relay"
+	DailyTokenLimit int64   `json:"daily_token_limit" gorm:"bigint;default:0"`               // 0 = unlimited
+	DailyTokenUsed  int64   `json:"daily_token_used" gorm:"bigint;default:0"`                // reset daily at 00:00
+	MaxConcurrent   int     `json:"max_concurrent" gorm:"default:0"`                         // 0 = unlimited
+
 	// cache info
 	Keys []string `json:"-" gorm:"-"`
 }
@@ -241,6 +250,25 @@ func (channel *Channel) GetTag() string {
 func (channel *Channel) SetTag(tag string) {
 	channel.Tag = &tag
 }
+
+func (channel *Channel) GetChannelLabel() string {
+	if channel.ChannelLabel == nil {
+		return ""
+	}
+	return *channel.ChannelLabel
+}
+
+func (channel *Channel) IsMarketplaceChannel() bool {
+	return channel.ChannelMode == 1
+}
+
+func (channel *Channel) IsDailyLimitReached() bool {
+	if channel.DailyTokenLimit <= 0 {
+		return false
+	}
+	return channel.DailyTokenUsed >= channel.DailyTokenLimit
+}
+
 
 func (channel *Channel) GetAutoBan() bool {
 	if channel.AutoBan == nil {
