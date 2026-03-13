@@ -140,7 +140,14 @@ func GetChannel(group string, model string, retry int) (*Channel, error) {
 		return nil, nil
 	}
 	err = DB.First(&channel, "id = ?", channel.Id).Error
-	return &channel, err
+	if err != nil {
+		return nil, err
+	}
+	// Skip channels that have reached their daily token limit
+	if channel.IsDailyLimitReached() {
+		return nil, nil
+	}
+	return &channel, nil
 }
 
 func (channel *Channel) AddAbilities(tx *gorm.DB) error {

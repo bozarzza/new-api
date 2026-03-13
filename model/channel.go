@@ -796,6 +796,26 @@ func updateChannelUsedQuota(id int, quota int) {
 	}
 }
 
+// UpdateChannelDailyTokenUsed atomically increments the daily token counter for a marketplace channel.
+func UpdateChannelDailyTokenUsed(id int, tokens int64) {
+	err := DB.Model(&Channel{}).Where("id = ?", id).
+		Update("daily_token_used", gorm.Expr("daily_token_used + ?", tokens)).Error
+	if err != nil {
+		common.SysLog(fmt.Sprintf("failed to update channel daily token used: channel_id=%d, tokens=%d, error=%v", id, tokens, err))
+	}
+}
+
+// ResetAllChannelsDailyTokenUsed resets daily_token_used to 0 for all marketplace channels.
+// Should be called by a daily cron/timer at midnight.
+func ResetAllChannelsDailyTokenUsed() {
+	err := DB.Model(&Channel{}).
+		Where("channel_mode = ? AND daily_token_used > 0", 1).
+		Update("daily_token_used", 0).Error
+	if err != nil {
+		common.SysLog(fmt.Sprintf("failed to reset daily token used: error=%v", err))
+	}
+}
+
 func DeleteChannelByStatus(status int64) (int64, error) {
 	result := DB.Where("status = ?", status).Delete(&Channel{})
 	return result.RowsAffected, result.Error
