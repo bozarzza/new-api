@@ -6,6 +6,7 @@ import (
 	"github.com/QuantumNous/new-api/logger"
 	relaycommon "github.com/QuantumNous/new-api/relay/common"
 	"github.com/QuantumNous/new-api/types"
+	"github.com/bytedance/gopkg/util/gopool"
 	"github.com/gin-gonic/gin"
 )
 
@@ -66,13 +67,22 @@ func SettleBilling(ctx *gin.Context, relayInfo *relaycommon.RelayInfo, actualQuo
 				checkAndSendQuotaNotify(relayInfo, actualQuota-preConsumed, preConsumed)
 			}
 		}
-		return nil
+	} else {
+		// 回退：无 BillingSession 时使用旧路径
+		quotaDelta := actualQuota - relayInfo.FinalPreConsumedQuota
+		if quotaDelta != 0 {
+			if err := PostConsumeQuota(relayInfo, quotaDelta, relayInfo.FinalPreConsumedQuota, true); err != nil {
+				return err
+			}
+		}
 	}
 
-	// 回退：无 BillingSession 时使用旧路径
-	quotaDelta := actualQuota - relayInfo.FinalPreConsumedQuota
-	if quotaDelta != 0 {
-		return PostConsumeQuota(relayInfo, quotaDelta, relayInfo.FinalPreConsumedQuota, true)
+	// Marketplace: settle seller credit asynchronously (both paths)
+	if actualQuota > 0 {
+		finalQuota := actualQuota
+		gopool.Go(func() {
+			SettleMarketplaceBilling(ctx, relayInfo, finalQuota)
+		})
 	}
 	return nil
 }
